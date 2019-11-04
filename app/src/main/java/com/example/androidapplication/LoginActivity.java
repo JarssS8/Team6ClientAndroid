@@ -76,6 +76,7 @@ public class LoginActivity extends AppCompatActivity {
                     socketThread.join();
                     if (socketThread.getMessageType().equals("loginok")) {
                         intent = new Intent(this, LogOutActivity.class);
+                        intent.putExtra("this_user",user);
                         startActivity(intent);
                     }
 
