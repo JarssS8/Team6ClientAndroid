@@ -23,7 +23,9 @@ import utilities.interfaces.Connectable;
 
 import static utilities.beans.Message.LOGIN_MESSAGE;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity implements Button.OnClickListener {
+
+    public Button btSignUpMain;
 
     //Buttons Declarations
     private Button btSignUp;

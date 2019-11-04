@@ -46,7 +46,7 @@
         app:layout_constraintVertical_bias="0.749" />
 
     <Button
-        android:id="@+id/btSignUpMain"
+        android:id="@+id/btSignUpMain2"
         android:layout_width="143dp"
         android:layout_height="53dp"
         android:onClick="onClick"
