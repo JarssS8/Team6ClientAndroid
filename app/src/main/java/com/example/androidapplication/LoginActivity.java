@@ -7,19 +7,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.IOException;
-
-import clientlogic.logic.ConnectableClientFactory;
 import utilities.beans.User;
 import utilities.exception.DBException;
 import utilities.exception.LogicException;
 import utilities.exception.LoginNotFoundException;
 import utilities.exception.WrongPasswordException;
-import utilities.interfaces.Connectable;
 
 import static utilities.beans.Message.LOGIN_MESSAGE;
 
@@ -46,12 +41,12 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
 
         //Text View Association
         username = findViewById(R.id.txtUsernameMain);
-        password = findViewById(R.id.txtPasswordMain);
+        password = findViewById(R.id.txtPassword);
 
 
     }
 
-    public void onClick(View v) throws LoginNotFoundException, WrongPasswordException, LogicException, DBException, InterruptedException {
+    public void onClick(View v) {
         Intent intent = null;
         switch (v.getId()) {
             case R.id.btLogInMain://Click on log in button
@@ -71,15 +66,20 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
                     User user = new User();
                     user.setLogin(username.getText().toString().trim());
                     user.setPassword(password.getText().toString().trim());
-                    SocketThread socketThread = new SocketThread();
-                    socketThread.setMessageType(LOGIN_MESSAGE);
-                    socketThread.setUser(user);
-                    socketThread.start();
-                    socketThread.join();
-                    if (socketThread.getMessageType().equals("loginok")) {
-                        intent = new Intent(this, LogOutActivity.class);
-                        intent.putExtra("this_user",user);
-                        startActivity(intent);
+                    try {
+                        SocketThread socketThread = new SocketThread();
+                        socketThread.setMessageType(LOGIN_MESSAGE);
+                        socketThread.setUser(user);
+                        socketThread.start();
+                        socketThread.join();
+
+                        if (socketThread.getMessageType().equals("loginok")) {
+                            intent = new Intent(this, LogOutActivity.class);
+                            intent.putExtra("this_user", user);
+                            startActivity(intent);
+                        }
+                    } catch (InterruptedException e) {
+                        e.getMessage();
                     }
 
 
