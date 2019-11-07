@@ -2,11 +2,16 @@ package com.example.androidapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -29,6 +34,10 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
     private EditText username;
     private EditText password;
 
+    private User user = null;
+
+    private boolean justSignUp = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +50,14 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
 
         //Text View Association
         username = findViewById(R.id.txtUsernameMain);
-        password = findViewById(R.id.txtPassword);
+        password = findViewById(R.id.txtPasswordMain);
+        isConnected();
+        user = (User) getIntent().getSerializableExtra("user");
+        if (user != null) {
+            username.setText(user.getLogin());
+            password.setText(user.getPassword());
+            justSignUp = true;
+        }
 
 
     }
@@ -50,8 +66,13 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
         Intent intent = null;
         switch (v.getId()) {
             case R.id.btLogInMain://Click on log in button
-
-                if (username.getText().toString().trim().length() < 4 || username.getText().toString().trim().length() > 10
+                if (justSignUp) {
+                    intent = new Intent(this, LogOutActivity.class);
+                    intent.putExtra("this_user", user);
+                    startActivity(intent);
+                    this.finish();
+                }
+                if (username.getText().toString().trim().length() < 4  || username.getText().toString().trim().length() > 10
                         && password.getText().toString().trim().length() < 8 || password.getText().toString().trim().length() > 14) {
 
                     Snackbar.make(v, "El formato del usuario y la contraseña no es correcto", Snackbar.LENGTH_SHORT).show();
@@ -61,38 +82,114 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
 
                 } else if (password.getText().toString().trim().length() < 8 || password.getText().toString().trim().length() > 14) {
                     Snackbar.make(v, "El formato de la contraseña no es correcto", Snackbar.LENGTH_SHORT).show();
+                } else if (!checkNumberUpperPass()) {
+                    Snackbar.make(v, "El formato de la contraseña no es correcto", Snackbar.LENGTH_SHORT).show();
+
                 } else {
-                    String correctMessage;
-                    User user = new User();
-                    user.setLogin(username.getText().toString().trim());
-                    user.setPassword(password.getText().toString().trim());
-                    try {
-                        SocketThread socketThread = new SocketThread();
-                        socketThread.setMessageType(LOGIN_MESSAGE);
-                        socketThread.setUser(user);
-                        socketThread.start();
-                        socketThread.join();
+                    if (isConnected()) {
+                        User user = new User();
+                        user.setLogin(username.getText().toString().trim());
+                        user.setPassword(password.getText().toString().trim());
+                        try {
+                            SocketThread socketThread = new SocketThread();
+                            socketThread.setMessageType(LOGIN_MESSAGE);
+                            socketThread.setUser(user);
+                            Log.d("Main", "onClick: PreStart Thread");
+                            socketThread.start();
+                            Log.d("Main", "onClick: Join thread ");
+                            socketThread.join();
+                            Log.d("Main", "After join");
+                            user = socketThread.getUser();
+                            if (user != null) {
+                                intent = new Intent(this, LogOutActivity.class);
+                                intent.putExtra("this_user", user);
+                                startActivity(intent);
+                                this.finish();
+                            }
 
-                        if (socketThread.getMessageType().equals("loginok")) {
-                            intent = new Intent(this, LogOutActivity.class);
-                            intent.putExtra("this_user", user);
-                            startActivity(intent);
+                        } catch (InterruptedException e) {
+                            e.getMessage();
                         }
-                    } catch (InterruptedException e) {
-                        e.getMessage();
+
+
+                    } else {
+                        // Snackbar.make(v, "Check your network status", Snackbar.LENGTH_SHORT).show();
+                        final Snackbar snackbar = Snackbar.make(v, "NO CONNECTION, CHECK YOUR CONNECTION", Snackbar.LENGTH_INDEFINITE);
+                        snackbar.setAction("OK", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                snackbar.dismiss();
+                            }
+                        });
+                        snackbar.show();
+
                     }
-
-
                 }
 
                 break;
 
             case R.id.btSignUpMain://Click on sign up button
-                intent = new Intent(this, SignUpActivity.class);
-                startActivity(intent);
+                if(isConnected()) {
+                    intent = new Intent(this, SignUpActivity.class);
+                    startActivity(intent);
+                }else {
+                    // Snackbar.make(v, "Check your network status", Snackbar.LENGTH_SHORT).show();
+                    final Snackbar snackbar = Snackbar.make(v, "NO CONNECTION, CHECK YOUR CONNECTION", Snackbar.LENGTH_INDEFINITE);
+                    snackbar.setAction("OK", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            snackbar.dismiss();
+                        }
+                    });
+                    snackbar.show();
+
+                }
+
+
                 break;
         }
 
+    }
+
+    private boolean checkNumberUpperPass() {
+        boolean capital = false;
+        boolean number = false;
+        boolean check = false;
+
+
+        char passwordChar[] = password.getText().toString().trim().toCharArray();
+        for (int i = 0; i < passwordChar.toString().trim().length(); i++) {
+            if (!number)
+                if (Character.isDigit(passwordChar[i])) {
+                    number = true;
+                }
+            if (!capital)
+                if (Character.isUpperCase(passwordChar[i])) {
+                    capital = true;
+                }
+            if (capital && number)
+                break;
+        }
+        if (capital && number) {
+            check = true;
+        }
+
+        return check;
+    }
+
+    public boolean isConnected() {
+        boolean connection = false;
+        try {
+            ConnectivityManager connectivityManager
+                    = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+            connection = activeNetworkInfo != null && activeNetworkInfo.isConnected();
+
+
+        } catch (Exception e) {
+            Log.e("Connection", e.getMessage());
+        }
+        return connection;
     }
 }
 
