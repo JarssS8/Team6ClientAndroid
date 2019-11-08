@@ -69,7 +69,7 @@ public class LogOutActivity extends AppCompatActivity {
         recyclerNamesMenu=findViewById(R.id.recyclerViewNamesMenu);
         recyclerNamesMenu.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
         namesMenu=new ArrayList<String>();
-        for(int i=0;i<4;i++){
+        for(int i=0;i<10;i++){
             namesMenu.add("Comming Soon!");
         }
         Menu_RecyclerViewAdapter adapter=new Menu_RecyclerViewAdapter(namesMenu);

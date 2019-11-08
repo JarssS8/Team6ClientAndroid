@@ -49,6 +49,7 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
         user = (User) getIntent().getSerializableExtra("user");
         if (user != null) {
             Log.i("Login","Gets user from sign up activity. Putting values on login and password fields.");
+            Snackbar.make(getWindow().getDecorView().getRootView(),"Sign Up completed, now you can LogIn",Snackbar.LENGTH_LONG).show();
             username.setText(user.getLogin());
             password.setText(user.getPassword());
             justSignUp = true;
