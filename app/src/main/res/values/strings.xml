@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AndroidApplication</string>
+    <string name="ip_server">JarsComputer</string>
+    <integer name="port_server">5000</integer>
 </resources>

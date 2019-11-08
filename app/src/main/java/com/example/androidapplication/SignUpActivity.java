@@ -49,20 +49,9 @@ public class SignUpActivity extends AppCompatActivity {
         btHelp = findViewById(R.id.btHelp);
         btConfirm = findViewById(R.id.btConfirm);
 
-
-        //DATOS
-        /*
-        txtUsername.setText("gaizka");
-        txtEmail.setText("gaizka@gmail.com");
-        txtFullName.setText("Gaizka");
-        txtPassword.setText("Abcd*1234");
-        txtRepeatPassword.setText("Abcd*1234");
-        */
-
-        //Toast.makeText(this, "Boton: "+ botonConfirmar, Toast.LENGTH_SHORT).show();
     }
 
-    private boolean checkPassword(Editable password) {
+    public boolean checkPassword(Editable password) {
 
         boolean capital = false;
         boolean number = false;
@@ -70,22 +59,23 @@ public class SignUpActivity extends AppCompatActivity {
 
 
         char passwordChar[] = password.toString().trim().toCharArray();
-        for (int i = 0; i < passwordChar.toString().trim().length(); i++) {
-            if (!number)
-                if (Character.isDigit(passwordChar[i])) {
-                    number = true;
-                }
-            if (!capital)
-                if (Character.isUpperCase(passwordChar[i])) {
-                    capital = true;
-                }
-            if(capital && number)
-                break;
+        if(password.toString().trim().length()!=0) {
+            for (int i = 0; i < passwordChar.toString().trim().length() - 1; i++) {
+                if (!number)
+                    if (Character.isDigit(passwordChar[i])) {
+                        number = true;
+                    }
+                if (!capital)
+                    if (Character.isUpperCase(passwordChar[i])) {
+                        capital = true;
+                    }
+                if (capital && number)
+                    break;
+            }
+            if (capital && number) {
+                check = true;
+            }
         }
-        if (capital && number) {
-            check = true;
-        }
-
         return check;
     }
 
@@ -179,13 +169,22 @@ public class SignUpActivity extends AppCompatActivity {
                         socketThread.setMessageType(SIGNUP_MESSAGE);
                         socketThread.start();
                         socketThread.join();
-                        Intent intent = new Intent(this, LoginActivity.class);
-                        intent.putExtra("user", socketThread.getUser());
-                        startActivity(intent);
+                        switch (socketThread.getMessageType()) {
+                            case "LoginTaken":
+                                Snackbar.make(v,"Login already taken. Try it again.",Snackbar.LENGTH_SHORT).show();
+                                break;
+                            case "ServerError":
+                                Snackbar.make(v,"Error connecting to the server",Snackbar.LENGTH_SHORT).show();
+                                break;
+                            case "OK":
+                                Intent intent = new Intent(this, LoginActivity.class);
+                                intent.putExtra("user", socketThread.getUser());
+                                startActivity(intent);
+                                break;
+                        }
                     } catch (InterruptedException e) {
                         e.getMessage();
                     }
-
                 }
                 else{
                     LayoutInflater layoutInflater = (LayoutInflater) getApplicationContext().getSystemService(LAYOUT_INFLATER_SERVICE);

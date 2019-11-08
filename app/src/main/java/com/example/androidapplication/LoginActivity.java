@@ -72,7 +72,7 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
                     startActivity(intent);
                     this.finish();
                 }
-                if (username.getText().toString().trim().length() < 4  || username.getText().toString().trim().length() > 10
+                if (username.getText().toString().trim().length() < 4 || username.getText().toString().trim().length() > 10
                         && password.getText().toString().trim().length() < 8 || password.getText().toString().trim().length() > 14) {
 
                     Snackbar.make(v, "El formato del usuario y la contraseña no es correcto", Snackbar.LENGTH_SHORT).show();
@@ -99,14 +99,26 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
                             Log.d("Main", "onClick: Join thread ");
                             socketThread.join();
                             Log.d("Main", "After join");
-                            user = socketThread.getUser();
-                            if (user != null) {
-                                intent = new Intent(this, LogOutActivity.class);
-                                intent.putExtra("this_user", user);
-                                startActivity(intent);
-                                this.finish();
-                            }
+                            switch (socketThread.getMessageType()) {
+                                case "LoginError":
+                                    Snackbar.make(v, "Login not found", Snackbar.LENGTH_SHORT).show();
+                                    break;
 
+                                case "ServerError":
+                                    Snackbar.make(v, "Error connecting to the server", Snackbar.LENGTH_SHORT).show();
+                                    break;
+                                case "PasswordError":
+                                    Snackbar.make(v, "Password is wrong", Snackbar.LENGTH_SHORT).show();
+                                    break;
+                                case "OK":
+                                    if (socketThread.getUser() != null) {
+                                        intent = new Intent(this, LogOutActivity.class);
+                                        intent.putExtra("this_user", socketThread.getUser());
+                                        startActivity(intent);
+                                        this.finish();
+                                    }
+                                    break;
+                            }
                         } catch (InterruptedException e) {
                             e.getMessage();
                         }
@@ -129,10 +141,10 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
                 break;
 
             case R.id.btSignUpMain://Click on sign up button
-                if(isConnected()) {
+                if (isConnected()) {
                     intent = new Intent(this, SignUpActivity.class);
                     startActivity(intent);
-                }else {
+                } else {
                     // Snackbar.make(v, "Check your network status", Snackbar.LENGTH_SHORT).show();
                     final Snackbar snackbar = Snackbar.make(v, "NO CONNECTION, CHECK YOUR CONNECTION", Snackbar.LENGTH_INDEFINITE);
                     snackbar.setAction("OK", new View.OnClickListener() {
@@ -158,7 +170,7 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
 
 
         char passwordChar[] = password.getText().toString().trim().toCharArray();
-        for (int i = 0; i < passwordChar.toString().trim().length(); i++) {
+        for (int i = 0; i < passwordChar.toString().trim().length()-1; i++) {
             if (!number)
                 if (Character.isDigit(passwordChar[i])) {
                     number = true;

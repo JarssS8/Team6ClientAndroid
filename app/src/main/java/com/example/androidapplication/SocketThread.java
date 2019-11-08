@@ -1,6 +1,14 @@
 package com.example.androidapplication;
 
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.util.Log;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 import clientlogic.logic.ConnectableClientFactory;
 import utilities.beans.User;
@@ -18,38 +26,38 @@ public class SocketThread extends Thread {
 
     private String messageType = null;
 
-
     private User user = null;
 
     @Override
     public void run() {
         if (user != null && messageType != null) {
             try {
-                Connectable client = ConnectableClientFactory.getClient();
-
+                Connectable client = ConnectableClientFactory.getClient("192.168.20.55",5000);
                 switch (messageType) {
                     case Message.LOGIN_MESSAGE:
                         Log.d("Thread", "Trying to set user");
                         setUser(client.logIn(user));
                         Log.d("Thread", "Set user succesfull " + user.getLogin());
-
+                        setMessageType("OK");
                         break;
                     case Message.LOGOUT_MESSAGE:
                         client.logOut(user);
+                        setMessageType("OK");
                         break;
                     case Message.SIGNUP_MESSAGE:
                         setUser(client.signUp(user));
+                        setMessageType("OK");
                         break;
 
                 }
             } catch (LoginNotFoundException e) {
-                e.printStackTrace();
+                setMessageType("LoginError");
             } catch (WrongPasswordException e) {
-                e.printStackTrace();
+                setMessageType("PasswordError");
             } catch (LoginAlreadyTakenException e) {
-                e.printStackTrace();
+                setMessageType("LoginTaken");
             } catch (ServerConnectionErrorException e) {
-                e.printStackTrace();
+                setMessageType("ServerError");
             }
         }
 
@@ -69,6 +77,18 @@ public class SocketThread extends Thread {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getProperty(String key){
+        Properties properties = new Properties();
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream("Properties.properties");
+            properties.load(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return properties.getProperty(key);
     }
 
 }
