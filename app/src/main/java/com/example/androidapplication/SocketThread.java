@@ -34,7 +34,7 @@ public class SocketThread extends Thread {
         if (user != null && messageType != null) {
             try {
                 Log.i("SocketThread","Creating a new client sending the IP and the PORT");
-                Connectable client = ConnectableClientFactory.getClient("192.168.21.155",5000);
+                Connectable client = ConnectableClientFactory.getClient("192.168.20.116",5000);
                 Log.i("SocketThread","Client created correctly");
                 switch (messageType) {
                     case Message.LOGIN_MESSAGE:

@@ -178,7 +178,7 @@ public class LoginActivity extends AppCompatActivity implements Button.OnClickLi
         boolean number = false;
         boolean check = false;
         char[] passwordChar = password.getText().toString().trim().toCharArray();
-        for (int i = 0; i < password.getText().toString().trim().length()-1; i++) {
+        for (int i = 0; i < password.getText().toString().trim().length(); i++) {
             if (!number)
                 if (Character.isDigit(passwordChar[i])) {
                     number = true;
